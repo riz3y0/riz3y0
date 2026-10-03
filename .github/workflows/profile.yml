@@ -1,0 +1,35 @@
+name: Update profile
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/profile.py
+      - assets/palette.json
+      - .github/workflows/profile.yml
+permissions:
+  contents: write
+concurrency:
+  group: profile-panels
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Generate panels
+        run: python scripts/profile.py
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Commit updated panels
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/github-*.svg
+          if ! git diff --cached --quiet; then
+            git commit -m 'Refresh GitHub activity'
+            git push
+          fi

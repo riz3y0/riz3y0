@@ -17,3 +17,28 @@
 </p>
 
 <br>
+
+## github
+
+<picture>
+  <source media="(max-width: 600px)" srcset="./assets/github-status-mobile.svg">
+  <img src="./assets/github-status.svg" width="100%" alt="Public GitHub repositories, stars, followers, and contributions over the past year.">
+</picture>
+
+## activity
+
+<picture>
+  <source media="(max-width: 600px)" srcset="./assets/github-activity-mobile.svg">
+  <img src="./assets/github-activity.svg" width="100%" alt="GitHub contribution calendar. Each square represents one day; lighter squares mean more contributions.">
+</picture>
+
+<sub>Public GitHub data, refreshed every six hours. The phone layout shows the most recent six months.</sub>
+
+## languages
+
+| | |
+| :--- | :--- |
+| **systems** | C · C++ · Rust · Zig · Assembly · D · Odin · Nim |
+| **browser** | JavaScript · TypeScript · HTML · CSS · Sass |
+| **backend** | Python · Go · PHP · Ruby · Java · C# · Kotlin · Elixir |
+| **data** | SQL |
