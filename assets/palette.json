@@ -1,10 +1,15 @@
 {
-  "background": "#141210",
-  "surface": "#1e1a18",
-  "outline": "#4f4b43",
-  "muted": "#b7b1a6",
-  "accent": "#d4cab4",
-  "secondary": "#ccaeb0",
-  "text": "#f0ede8",
-  "error": "#e898a2"
+  "background": "#16131f",
+  "surface": "#1b1925",
+  "surface_lowest": "#0f0d17",
+  "outline": "#3a3745",
+  "muted": "#c9c4d3",
+  "dim": "#a09caa",
+  "accent": "#cabeff",
+  "secondary": "#d3bfe6",
+  "tertiary": "#e4b8ea",
+  "text": "#e6e0ef",
+  "moon": "#ece6ff",
+  "success": "#82d2a3",
+  "error": "#f9a1ae"
 }

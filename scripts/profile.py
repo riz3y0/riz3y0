@@ -48,7 +48,7 @@ def text(x,y,content,size=24,fill=None,weight=400,anchor='start'):
 def base(width,height,title,description):
     return [f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title desc">',
             f'<title id="title">{html.escape(title)}</title><desc id="desc">{html.escape(description)}</desc>',
-            f'<path fill="{PALETTE["background"]}" d="M0 0H{width}V{height}H0Z"/>',
+            f'<rect x=".5" y=".5" width="{width-1}" height="{height-1}" rx="24" fill="{PALETTE["background"]}" stroke="{PALETTE["text"]}" stroke-opacity=".07"/>',
             '<g font-family="Inter,Segoe UI,Arial,sans-serif">']
 
 
@@ -63,12 +63,12 @@ def status(user,stars,mobile=False):
     for i,(label,number) in enumerate(metrics):
         x = 38 + (i%2)*350 if mobile else 42+i*296
         y = 72 + (i//2)*140 if mobile else 87
-        svg.extend([text(x,y,f'{number:,}',54,PALETTE['accent'],600),text(x,y+39,label,27,PALETTE['muted'])])
+        svg.extend([text(x,y,f'{number:,}',54,PALETTE['accent'] if i%2==0 else PALETTE['tertiary'],700),text(x,y+39,label,27,PALETTE['dim'])])
         if (i%2 if mobile else i)<(1 if mobile else 3):
             end_y = y+39
             svg.append(f'<path d="M{x+(307 if mobile else 254)} {y-40}V{end_y}" stroke="{PALETTE["outline"]}"/>')
     stamp = dt.datetime.now(dt.timezone.utc).strftime('%d %b %Y').lower()
-    svg.append(text(38 if mobile else 42,height-27,'updated '+stamp+' · public activity',23 if mobile else 20,PALETTE['muted']))
+    svg.append(text(38 if mobile else 42,height-27,'✦ updated '+stamp+' · public activity',23 if mobile else 20,PALETTE['dim']))
     save('github-status'+('-mobile' if mobile else '')+'.svg',svg)
 
 
@@ -84,7 +84,7 @@ def activity(user,mobile=False):
     left,top,step,cell = (63,76,24,19) if mobile else (69,70,20,15)
     counts = [d['contributionCount'] for w in weeks for d in w['contributionDays']]
     highest = max(counts or [1]) or 1
-    shades = [PALETTE['surface']] + [blend(PALETTE['outline'],PALETTE['accent'],r) for r in (.2,.45,.7,1)]
+    shades = [PALETTE['surface']] + [blend(PALETTE['outline'],PALETTE['accent'],r) for r in (.3,.6,.9)] + [PALETTE['tertiary']]
     label = 'past six months' if mobile else 'past year'
     svg = base(width,height,'GitHub activity',f'Contribution calendar for the {label}, from GitHub. {sum(counts)} contributions shown.')
     previous_month = None
@@ -95,7 +95,7 @@ def activity(user,mobile=False):
             amount = day['contributionCount']
             level = min(4,max(1,round(amount/highest*3)+1)) if amount else 0
             x,y = left+column*step,top+row*step
-            svg.append(f'<rect x="{x}" y="{y}" width="{cell}" height="{cell}" fill="{shades[level]}"><title>{date}: {amount} contributions</title></rect>')
+            svg.append(f'<rect x="{x}" y="{y}" width="{cell}" height="{cell}" rx="4" fill="{shades[level]}"><title>{date}: {amount} contributions</title></rect>')
             if date.day<=7 and date.month != previous_month and column<len(weeks)-2:
                 svg.append(text(x,top-23,date.strftime('%b').lower(),24 if mobile else 21,PALETTE['muted']))
                 previous_month = date.month
@@ -104,9 +104,9 @@ def activity(user,mobile=False):
     bottom = height-31
     svg.append(text(left,bottom,label,23 if mobile else 20,PALETTE['muted']))
     legend_x = width-224
-    svg.append(text(legend_x-16,bottom,'less',21 if mobile else 19,PALETTE['muted'],anchor='end'))
+    svg.append(text(legend_x-16,bottom,'less',21 if mobile else 19,PALETTE['dim'],anchor='end'))
     for index,color in enumerate(shades):
-        svg.append(f'<rect x="{legend_x+index*23}" y="{bottom-17}" width="17" height="17" fill="{color}"/>')
+        svg.append(f'<rect x="{legend_x+index*23}" y="{bottom-17}" width="17" height="17" rx="4" fill="{color}"/>')
     svg.append(text(legend_x+125,bottom,'more',21 if mobile else 19,PALETTE['muted']))
     save('github-activity'+('-mobile' if mobile else '')+'.svg',svg)
 

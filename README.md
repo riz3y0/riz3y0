@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(max-width: 600px)" srcset="./assets/banner-mobile.svg">
-    <img src="./assets/banner.svg" width="100%" alt="rize — vibecoder from poland. A moonlit mountain valley, drawn in charcoal and warm stone colors.">
+    <img src="./assets/banner.svg" width="100%" alt="rize — vibecoder from poland. A lavender night sky with a crescent moon, a small constellation, and a rounded island hanging from the top edge with the name rize.">
   </picture>
 </p>
 
@@ -33,6 +33,14 @@
 </picture>
 
 <sub>Public GitHub data, refreshed every six hours. The phone layout shows the most recent six months.</sub>
+
+## setup
+
+| | |
+| :--- | :--- |
+| **desktop** | CachyOS · niri · Vesper, my own Quickshell shell with a dynamic island |
+| **terminal** | foot · fish · yazi · neovim / zed |
+| **colors** | pulled from the wallpaper, everywhere, every time it changes |
 
 ## languages
 

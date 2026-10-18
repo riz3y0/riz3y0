@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="720" height="364" viewBox="0 0 720 364" role="img" aria-labelledby="title desc">
-<title id="title">GitHub overview</title><desc id="desc">1 repositories, 0 stars, 0 followers, 10 contributions. Contributions cover the past year; repositories exclude forks.</desc>
-<path fill="#141210" d="M0 0H720V364H0Z"/>
+<title id="title">GitHub overview</title><desc id="desc">1 repositories, 0 stars, 0 followers, 113 contributions. Contributions cover the past year; repositories exclude forks.</desc>
+<rect x=".5" y=".5" width="719" height="363" rx="24" fill="#16131f" stroke="#e6e0ef" stroke-opacity=".07"/>
 <g font-family="Inter,Segoe UI,Arial,sans-serif">
-<text x="38" y="72" fill="#d4cab4" font-size="54" font-weight="600" text-anchor="start">1</text>
-<text x="38" y="111" fill="#b7b1a6" font-size="27" font-weight="400" text-anchor="start">repositories</text>
-<path d="M345 32V111" stroke="#4f4b43"/>
-<text x="388" y="72" fill="#d4cab4" font-size="54" font-weight="600" text-anchor="start">0</text>
-<text x="388" y="111" fill="#b7b1a6" font-size="27" font-weight="400" text-anchor="start">stars</text>
-<text x="38" y="212" fill="#d4cab4" font-size="54" font-weight="600" text-anchor="start">0</text>
-<text x="38" y="251" fill="#b7b1a6" font-size="27" font-weight="400" text-anchor="start">followers</text>
-<path d="M345 172V251" stroke="#4f4b43"/>
-<text x="388" y="212" fill="#d4cab4" font-size="54" font-weight="600" text-anchor="start">10</text>
-<text x="388" y="251" fill="#b7b1a6" font-size="27" font-weight="400" text-anchor="start">contributions</text>
-<text x="38" y="337" fill="#b7b1a6" font-size="23" font-weight="400" text-anchor="start">updated 18 oct 2026 · public activity</text>
+<text x="38" y="72" fill="#cabeff" font-size="54" font-weight="700" text-anchor="start">1</text>
+<text x="38" y="111" fill="#a09caa" font-size="27" font-weight="400" text-anchor="start">repositories</text>
+<path d="M345 32V111" stroke="#3a3745"/>
+<text x="388" y="72" fill="#e4b8ea" font-size="54" font-weight="700" text-anchor="start">0</text>
+<text x="388" y="111" fill="#a09caa" font-size="27" font-weight="400" text-anchor="start">stars</text>
+<text x="38" y="212" fill="#cabeff" font-size="54" font-weight="700" text-anchor="start">0</text>
+<text x="38" y="251" fill="#a09caa" font-size="27" font-weight="400" text-anchor="start">followers</text>
+<path d="M345 172V251" stroke="#3a3745"/>
+<text x="388" y="212" fill="#e4b8ea" font-size="54" font-weight="700" text-anchor="start">113</text>
+<text x="388" y="251" fill="#a09caa" font-size="27" font-weight="400" text-anchor="start">contributions</text>
+<text x="38" y="337" fill="#a09caa" font-size="23" font-weight="400" text-anchor="start">✦ updated 18 oct 2026 · public activity</text>
 </g></svg>
