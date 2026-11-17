@@ -1,52 +1,38 @@
 <p align="center">
   <picture>
     <source media="(max-width: 600px)" srcset="./assets/banner-mobile.svg">
-    <img src="./assets/banner.svg" width="100%" alt="rize — vibecoder from poland. A lavender night sky with a crescent moon, a small constellation, and a rounded island hanging from the top edge with the name rize.">
+    <img src="./assets/banner.svg" width="100%" alt="RIZE in big pixel letters on an 8-bit blue sky, with drifting clouds, a striped hot-air balloon, a blinking sun and the line: rust & go, linux, poland.">
   </picture>
 </p>
 
-<br>
-
 <p align="center">
-  i use AI to build whatever i'm into at the time.<br>
-  usually on Linux, probably in a terminal.
-</p>
-
-<p align="center">
-  <a href="https://github.com/riz3y0?tab=repositories">explore my projects ↗</a>
+  i build fast little tools in rust and go.<br>
+  usually on linux, probably in a terminal.
 </p>
 
 <br>
 
-## github
+<img src="./assets/h-stats.svg" height="34" alt="stats">
 
 <picture>
-  <source media="(max-width: 600px)" srcset="./assets/github-status-mobile.svg">
-  <img src="./assets/github-status.svg" width="100%" alt="Public GitHub repositories, stars, followers, and contributions over the past year.">
+  <source media="(max-width: 600px)" srcset="./assets/stats-mobile.svg">
+  <img src="./assets/stats.svg" width="100%" alt="Public repositories, stars, followers and contributions over the past year.">
 </picture>
 
-## activity
+<img src="./assets/h-activity.svg" height="34" alt="activity">
 
 <picture>
-  <source media="(max-width: 600px)" srcset="./assets/github-activity-mobile.svg">
-  <img src="./assets/github-activity.svg" width="100%" alt="GitHub contribution calendar. Each square represents one day; lighter squares mean more contributions.">
+  <source media="(max-width: 600px)" srcset="./assets/activity-mobile.svg">
+  <img src="./assets/activity.svg" width="100%" alt="Contribution calendar: one square per day, brighter squares mean busier days.">
 </picture>
 
-<sub>Public GitHub data, refreshed every six hours. The phone layout shows the most recent six months.</sub>
-
-## setup
+<img src="./assets/h-loadout.svg" height="34" alt="loadout">
 
 | | |
 | :--- | :--- |
+| **main** | Rust · Go |
+| **also** | C · C++ · Zig · Python · TypeScript |
 | **desktop** | CachyOS · niri · Vesper, my own Quickshell shell with a dynamic island |
 | **terminal** | foot · fish · yazi · neovim / zed |
-| **colors** | pulled from the wallpaper, everywhere, every time it changes |
 
-## languages
-
-| | |
-| :--- | :--- |
-| **systems** | C · C++ · Rust · Zig · Assembly · D · Odin · Nim |
-| **browser** | JavaScript · TypeScript · HTML · CSS · Sass |
-| **backend** | Python · Go · PHP · Ruby · Java · C# · Kotlin · Elixir |
-| **data** | SQL |
+<sub>every image here is drawn pixel by pixel by a small python script, no fonts, no frameworks. the panels refresh daily from public github data.</sub>

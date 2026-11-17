@@ -1,15 +1,12 @@
 {
-  "background": "#16131f",
-  "surface": "#1b1925",
-  "surface_lowest": "#0f0d17",
-  "outline": "#3a3745",
-  "muted": "#c9c4d3",
-  "dim": "#a09caa",
-  "accent": "#cabeff",
-  "secondary": "#d3bfe6",
-  "tertiary": "#e4b8ea",
-  "text": "#e6e0ef",
-  "moon": "#ece6ff",
-  "success": "#82d2a3",
-  "error": "#f9a1ae"
+  "ink": "#0a1f3d",
+  "navy": "#123a6b",
+  "deep": "#1f63b5",
+  "sky": "#3d9be9",
+  "light": "#7cc6ff",
+  "pale": "#bfe6ff",
+  "white": "#f4fbff",
+  "sun": "#ffd84a",
+  "sunshade": "#ffa630",
+  "coral": "#ff6f61"
 }

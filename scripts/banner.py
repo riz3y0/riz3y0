@@ -1,125 +1,267 @@
 #!/usr/bin/env python3
-"""Draw the Vesper profile banner (desktop + phone) from assets/palette.json."""
-import json
+"""Draw the 8-bit sky banner (desktop + phone) and the pixel section headings.
+
+Run it after changing the palette or the layout; the result is committed. Only the standard library is needed.
+"""
 import math
 import random
-from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-P = json.loads((ROOT / 'assets/palette.json').read_text())
-FONT = 'Inter,Segoe UI,Helvetica Neue,Arial,sans-serif'
-MONO = 'JetBrains Mono,SF Mono,Menlo,Consolas,monospace'
+from pixel import PALETTE as P, dilate, notched, paint, save, shift, svg, text, text_pixels, text_width
+
+SCALE = 5  # real pixels per logical pixel
 
 
-def star(cx, cy, r, fill, cls='', extra=''):
-    """Four-point sparkle, like the shell's workspace stars."""
-    k = r * 0.28
-    d = (f'M{cx} {cy - r}Q{cx + k} {cy - k} {cx + r} {cy}Q{cx + k} {cy + k} {cx} {cy + r}'
-         f'Q{cx - k} {cy + k} {cx - r} {cy}Q{cx - k} {cy - k} {cx} {cy - r}Z')
-    return f'<path class="{cls}" d="{d}" fill="{fill}" {extra}/>'
+def sky(w, h, bands):
+    """Flat colour bands with a three-row dither between each pair, like an old console gradient."""
+    defs, body = [], []
+    for i, (y, color) in enumerate(bands):
+        end = bands[i + 1][0] if i + 1 < len(bands) else h
+        body.append(f'<rect y="{y}" width="{w}" height="{end - y}" fill="{color}"/>')
+    for i in range(1, len(bands)):
+        (y, b), a = bands[i], bands[i - 1][1]
+        for name, color, cells in ((f'q{i}', b, '<rect width="1" height="1"/><rect x="2" y="1" width="1" height="1"/>'),
+                                   (f'h{i}', b, '<rect width="1" height="1"/><rect x="1" y="1" width="1" height="1"/>'),
+                                   (f'r{i}', a, '<rect width="1" height="1"/><rect x="2" y="1" width="1" height="1"/>')):
+            pw = 4 if name[0] in 'qr' else 2
+            defs.append(f'<pattern id="{name}" width="{pw}" height="2" patternUnits="userSpaceOnUse" fill="{color}">{cells}</pattern>')
+        body += [f'<rect y="{y - 2}" width="{w}" height="1" fill="url(#q{i})"/>',
+                 f'<rect y="{y - 1}" width="{w}" height="1" fill="url(#h{i})"/>',
+                 f'<rect y="{y}" width="{w}" height="1" fill="url(#r{i})"/>']
+    return defs, body
 
 
-def island(cx, w, h, rs=22):
-    """The hanging island: flush with the top edge, concave shoulders, round bottom."""
-    x0, x1, rb = cx - w / 2, cx + w / 2, h / 2
-    return (f'M{x0 - rs} 0A{rs} {rs} 0 0 1 {x0} {rs}V{h - rb}A{rb} {rb} 0 0 0 {x0 + rb} {h}'
-            f'H{x1 - rb}A{rb} {rb} 0 0 0 {x1} {h - rb}V{rs}A{rs} {rs} 0 0 1 {x1 + rs} 0Z')
+PUFFS = {  # (x, radius) of each puff along a flat bottom
+    's': [(3, 2.5), (8, 3.5), (13, 2.5)],
+    'm': [(4, 3.5), (10.5, 4.5), (17, 4), (22.5, 3)],
+    'l': [(5, 4), (12, 5.5), (19.5, 6), (27, 4.5), (32.5, 3.5)],
+}
 
 
-def banner(width, height, mobile):
-    rnd = random.Random(7)
-    s = 0.5 if mobile else 1.0           # phone layout is drawn at half scale, then enlarged
-    moon = (width * (0.74 if mobile else 0.79), height * (0.47 if mobile else 0.5), 78 if mobile else 92)
-    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title desc">',
-             '<title id="title">rize — vibecoder from poland</title>',
-             '<desc id="desc">A night sky in lavender and violet: a crescent moon, a small constellation, '
-             'and a rounded island hanging from the top edge with the name rize. Stars twinkle softly; '
-             'reduced-motion settings keep them still.</desc>',
-             '<defs>',
-             f'<clipPath id="card"><rect width="{width}" height="{height}" rx="28"/></clipPath>',
-             f'<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#000"/>'
-             f'<stop offset=".35" stop-color="{P["surface_lowest"]}"/><stop offset="1" stop-color="{P["background"]}"/></linearGradient>',
-             f'<radialGradient id="glow"><stop stop-color="{P["accent"]}" stop-opacity=".30"/>'
-             f'<stop offset=".45" stop-color="{P["accent"]}" stop-opacity=".08"/><stop offset="1" stop-color="{P["accent"]}" stop-opacity="0"/></radialGradient>',
-             f'<radialGradient id="haze" cx=".2" cy="1" r=".9"><stop stop-color="{P["tertiary"]}" stop-opacity=".16"/>'
-             f'<stop offset="1" stop-color="{P["tertiary"]}" stop-opacity="0"/></radialGradient>',
-             f'<linearGradient id="isle" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#000"/>'
-             f'<stop offset="1" stop-color="{P["surface"]}"/></linearGradient>',
-             f'<linearGradient id="line" x1="0" y1="0" x2="1" y2="0"><stop stop-color="{P["accent"]}"/>'
-             f'<stop offset="1" stop-color="{P["tertiary"]}"/></linearGradient>',
-             f'<mask id="crescent"><circle cx="{moon[0]}" cy="{moon[1]}" r="{moon[2]}" fill="#fff"/>'
-             f'<circle cx="{moon[0] + moon[2] * 0.42}" cy="{moon[1] - moon[2] * 0.3}" r="{moon[2] * 0.86}" fill="#000"/></mask>',
-             '<filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>',
-             '</defs>',
-             '<style>'
-             '.tw{animation:tw 7s ease-in-out infinite alternate}.tw2{animation-duration:11s;animation-delay:-4s}'
-             '.tw3{animation-duration:5s;animation-delay:-2s}'
-             '@keyframes tw{from{opacity:.25}to{opacity:.95}}'
-             '.cur{animation:blink 1.1s steps(1) infinite}@keyframes blink{50%{opacity:0}}'
-             '.breathe{animation:br 9s ease-in-out infinite alternate;transform-origin:center;transform-box:fill-box}'
-             '@keyframes br{from{opacity:.75}to{opacity:1}}'
-             '@media (prefers-reduced-motion:reduce){.tw,.cur,.breathe{animation:none}}'
-             '</style>',
-             '<g clip-path="url(#card)">',
-             f'<rect width="{width}" height="{height}" fill="url(#sky)"/>',
-             f'<rect width="{width}" height="{height}" fill="url(#haze)"/>',
-             f'<circle cx="{moon[0]}" cy="{moon[1]}" r="{moon[2] * 3.2}" fill="url(#glow)" class="breathe"/>']
+def cloud(x, base, kind):
+    """A cloud of round puffs sitting on a flat bottom at row `base`. Returns (body, shade) pixel sets."""
+    puffs = PUFFS[kind]
+    pix = set()
+    for cx, r in puffs:
+        cy = -r + 0.5
+        for py in range(int(cy - r) - 1, 0):
+            for px in range(int(cx - r) - 1, int(cx + r) + 2):
+                if (px + .5 - cx) ** 2 + (py + .5 - cy) ** 2 <= r * r + 0.5:
+                    pix.add((px, py))
+    for py in range(-3, 0):
+        for px in range(int(puffs[0][0]), int(puffs[-1][0]) + 1):
+            pix.add((px, py))
+    shade = {(px, py) for px, py in pix if py == -1 or (px + 1, py + 1) not in pix or (px, py + 2) not in pix}
+    return shift(pix - shade, x, base), shift(shade, x, base)
 
-    # field of stars
-    for i in range(70 if mobile else 140):
-        x, y = rnd.uniform(0, width), rnd.uniform(0, height) ** 1.15 / height ** 0.15
-        if math.dist((x, y), moon[:2]) < moon[2] * 1.35:
-            continue
-        r = rnd.choice((0.6, 0.8, 0.8, 1.0, 1.2, 1.5))
-        cls = 'tw ' + rnd.choice(('', 'tw2', 'tw3'))
-        color = rnd.choice((P['text'], P['text'], P['muted'], P['accent'], P['tertiary']))
-        parts.append(f'<circle class="{cls}" cx="{x:.1f}" cy="{y:.1f}" r="{r}" fill="{color}" opacity=".7"/>')
 
-    # the moon
-    mx, my, mr = moon
-    parts += [f'<circle cx="{mx}" cy="{my}" r="{mr}" fill="{P["accent"]}" opacity=".55" mask="url(#crescent)" filter="url(#soft)"/>',
-              f'<circle cx="{mx}" cy="{my}" r="{mr}" fill="{P["moon"]}" mask="url(#crescent)"/>']
+def wrap_layer(name, w, elements, seconds):
+    """A layer that drifts left forever: drawn three times side by side, moved one pixel per step."""
+    return [f'<g id="{name}">{"".join(elements)}</g>',
+            f'<use href="#{name}" x="{-w}"/><use href="#{name}" x="{w}"/>'], \
+        f'.{name}{{animation:drift{w} {seconds}s steps({w}) infinite}}'
 
-    # constellation (the workspace indicator, writ large)
-    pts = ([(0.10, 0.62), (0.18, 0.50), (0.27, 0.56), (0.35, 0.44), (0.30, 0.30), (0.42, 0.36), (0.48, 0.26)] if not mobile else
-           [(0.08, 0.66), (0.17, 0.55), (0.27, 0.61), (0.36, 0.50), (0.31, 0.38), (0.44, 0.43), (0.52, 0.34)])
-    pts = [(width * a, height * b) for a, b in pts]
-    path = 'M' + 'L'.join(f'{x:.0f} {y:.0f}' for x, y in pts[:5]) + f'M{pts[3][0]:.0f} {pts[3][1]:.0f}L{pts[5][0]:.0f} {pts[5][1]:.0f}L{pts[6][0]:.0f} {pts[6][1]:.0f}'
-    parts.append(f'<path d="{path}" fill="none" stroke="url(#line)" stroke-width="{1.4 if not mobile else 1.6}" stroke-opacity=".45" stroke-linecap="round" stroke-linejoin="round"/>')
-    for i, (x, y) in enumerate(pts):
-        big = i in (3, 6)
-        r = (13 if big else 8) * (1.1 if mobile else 1)
-        col = P['accent'] if i % 2 == 0 else P['tertiary']
-        parts.append(f'<circle cx="{x:.0f}" cy="{y:.0f}" r="{r * 1.6:.0f}" fill="{col}" opacity=".18" filter="url(#soft)"/>')
-        parts.append(star(round(x), round(y), r, P['moon'] if big else col, 'tw' + (' tw2' if i % 3 == 0 else ' tw3' if i % 3 == 1 else '')))
 
-    # the island, hanging from the top edge
-    w, h = (560, 84) if mobile else (600, 78)
-    cx = width / 2
-    parts += [f'<path d="{island(cx, w, h)}" fill="url(#isle)"/>',
-              f'<path d="{island(cx, w, h)}" fill="none" stroke="{P["text"]}" stroke-opacity=".07"/>']
-    gx = cx - w / 2 + 44
-    gy = h / 2
-    parts += [f'<circle cx="{gx}" cy="{gy}" r="21" fill="{P["accent"]}" fill-opacity=".18"/>',
-              star(gx, gy, 11, P['accent']),
-              f'<text x="{gx + 38}" y="{gy + 10}" font-family="{FONT}" font-size="{30 if mobile else 29}" font-weight="700" fill="{P["text"]}">rize</text>',
-              f'<text x="{gx + (114 if mobile else 110)}" y="{gy + 9}" font-family="{FONT}" font-size="{22 if mobile else 21}" fill="{P["muted"]}">vibecoder from poland</text>',
-              f'<circle cx="{cx + w / 2 - 36}" cy="{gy}" r="6" fill="{P["success"]}"/>',
-              f'<circle cx="{cx + w / 2 - 36}" cy="{gy}" r="11" fill="{P["success"]}" opacity=".18" class="tw tw3"/>']
+def layer(name, w, clouds, colors, seconds):
+    parts = []
+    for x, base, kind in clouds:
+        body, shade = cloud(x, base, kind)
+        parts += [paint(body, colors[0]), paint(shade, colors[1])]
+    inner, css = wrap_layer(name, w, parts, seconds)
+    return [f'<g class="{name}">', *inner, '</g>'], css
 
-    # a prompt, because it's probably happening in a terminal
-    px, py = (40, height - 46) if mobile else (56, height - 54)
-    fs = 24 if mobile else 22
-    parts += [f'<text x="{px}" y="{py}" font-family="{MONO}" font-size="{fs}" fill="{P["accent"]}" font-weight="700">~</text>',
-              f'<text x="{px + fs * 1.1}" y="{py}" font-family="{MONO}" font-size="{fs}" fill="{P["accent"]}">❯</text>',
-              f'<text x="{px + fs * 2.4}" y="{py}" font-family="{MONO}" font-size="{fs}" fill="{P["muted"]}">building whatever i\'m into</text>',
-              f'<rect class="cur" x="{px + fs * 2.4 + fs * 0.6 * 27}" y="{py - fs * 0.8}" width="{fs * 0.55:.0f}" height="{fs * 0.95:.0f}" rx="2" fill="{P["accent"]}"/>']
 
-    parts += ['</g>', f'<rect x=".5" y=".5" width="{width - 1}" height="{height - 1}" rx="28" fill="none" stroke="{P["text"]}" stroke-opacity=".06"/>', '</svg>']
-    return '\n'.join(parts) + '\n'
+def sea(name, w, h, top, rise, seed, colors, seconds):
+    """A periodic bank of cloud tops along the bottom edge."""
+    rnd = random.Random(seed)
+    bumps = []
+    x = 0.0
+    while x < w:
+        r = rnd.uniform(rise * 0.5, rise)
+        bumps.append((x, top + rise, r))
+        x += r * rnd.uniform(1.4, 1.9)
+    pix = set()
+    for py in range(top - 1, h):
+        for px in range(w):
+            if py >= top + rise or any(min(abs(px + .5 - cx), w - abs(px + .5 - cx)) ** 2 + (py + .5 - cy) ** 2 <= r * r
+                                       for cx, cy, r in bumps):
+                pix.add((px, py))
+    edge = {(px, py) for px, py in pix if (px, py - 1) not in pix}
+    rim = {(px, py + 1) for px, py in edge} & pix
+    inner, css = wrap_layer(name, w, [paint(pix - edge - rim, colors[0]), paint(rim, colors[1]), paint(edge, colors[2])], seconds)
+    return [f'<g class="{name}">', *inner, '</g>'], css
+
+
+def sun(cx, cy, r):
+    body = {(x, y) for x in range(cx - r - 1, cx + r + 2) for y in range(cy - r - 1, cy + r + 2)
+            if (x + .5 - cx) ** 2 + (y + .5 - cy) ** 2 <= r * r}
+    shade = {(x, y) for x, y in body if (x - cx) + (y - cy) > r * 0.55 and (x + 1, y + 1) not in body or
+             ((x - cx) + (y - cy) > r * 0.9)}
+    glint = {(cx - r // 2 + dx, cy - r // 2 + dy) for dx, dy in ((0, 0), (1, 0), (0, 1))}
+    rays_a, rays_b = set(), set()
+    for k in range(8):
+        a = k * math.pi / 4
+        for d in (r + 2, r + 3):
+            p = (round(cx - .5 + math.cos(a) * d), round(cy - .5 + math.sin(a) * d))
+            (rays_a if k % 2 == 0 else rays_b).add(p)
+    return [paint(body - shade - glint, P['sun']), paint(shade, P['sunshade']), paint(glint, P['white']),
+            f'<g class="ray">{paint(rays_a, P["sun"])}</g>', f'<g class="ray alt">{paint(rays_b, P["sun"])}</g>']
+
+
+BIRD_UP = ['#.....#', '.##.##.', '...#...']
+BIRD_DOWN = ['.......', '.##.##.', '#..#..#']
+
+
+def bird(x, y, delay, seconds, span):
+    frames = []
+    for i, rows in enumerate((BIRD_UP, BIRD_DOWN)):
+        pix = {(x + c, y + r) for r, row in enumerate(rows) for c, b in enumerate(row) if b == '#'}
+        frames.append(f'<g class="flap{" alt" if i else ""}">{paint(pix, P["navy"])}</g>')
+    return [f'<g class="fly" style="animation-duration:{seconds}s;animation-delay:{delay}s;animation-timing-function:steps({span})">',
+            '<g class="bob">', *frames, '</g></g>']
+
+
+BALLOON_HALF = [2, 4, 5, 6, 6, 6, 6, 6, 5, 5, 4, 3, 2, 1]
+
+
+def balloon(x, y):
+    """A striped hot-air balloon, the one warm thing in the sky. It bobs; its basket hangs below."""
+    cx = 6
+    env = {(cx + dx, r) for r, hw in enumerate(BALLOON_HALF) for dx in range(-hw, hw + 1)}
+    coral, white = set(), set()
+    for px, py in env:
+        u = (px - cx) / (BALLOON_HALF[py] + .5)
+        (coral if abs(u) < 0.3 or abs(u) > 0.72 else white).add((px, py))
+    shade = {(px, py) for px, py in env if (px + 1, py) not in env or (px, py + 1) not in env}
+    glint = {(cx - 3, 2), (cx - 4, 3), (cx - 4, 4)}
+    outline = dilate(env) - env
+    n = len(BALLOON_HALF)
+    ropes = {(cx - 1, n), (cx + 1, n), (cx - 1, n + 1), (cx + 1, n + 1)}
+    basket = {(cx + dx, n + 2 + dy) for dx in (-1, 0, 1) for dy in (0, 1)}
+    parts = [paint(outline | dilate(basket) - basket, P['ink']),
+             paint(coral - shade - glint, P['coral']), paint(white - shade - glint, P['white']),
+             paint(shade & coral, '#d94f45'), paint(shade & white, P['pale']), paint(glint, P['white']),
+             paint(ropes, P['ink']), paint(basket, P['sunshade'])]
+    return [f'<g transform="translate({x} {y})"><g class="float">', *parts, '</g></g>']
+
+
+def twinkle(x, y, delay):
+    arms = {(x, y - 1), (x, y + 1), (x - 1, y), (x + 1, y)}
+    return f'<g class="tw" style="animation-delay:{delay}s">{paint({(x, y)}, P["white"])}{paint(arms, P["pale"])}</g>'
+
+
+def title(word, x, y, scale):
+    """Each letter is its own group so it can hop; the shadow stays on the ground."""
+    shadow, letters = set(), []
+    cx = x
+    for i, ch in enumerate(word):
+        fill = text_pixels(ch, cx, y, scale=scale)
+        outline = dilate(fill)
+        shadow |= shift(outline, 2, 2)
+        lower = {(a, b) for a, b in fill if b >= y + 4 * scale}
+        letters.append(f'<g class="hop" style="animation-delay:{i * 0.14:.2f}s">'
+                       f'{paint(outline - fill, P["ink"])}{paint(fill - lower, P["white"])}{paint(lower, P["pale"])}</g>')
+        cx += text_width(ch, scale=scale) + scale
+    return [paint(shadow, P['navy']), *letters]
+
+
+def frame(w, h, n=3):
+    """The 1-pixel ink border just inside the notched corners."""
+    def inside(x, y):
+        for cx, cy in ((x, y), (w - 1 - x, y), (x, h - 1 - y), (w - 1 - x, h - 1 - y)):
+            if cy < n and cx < n - cy:
+                return False
+        return 0 <= x < w and 0 <= y < h
+    border = {(x, y) for x in range(w) for y in range(h) if inside(x, y) and
+              not all(inside(x + dx, y + dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
+    return paint(border, P['ink'])
+
+
+def banner(mobile):
+    w, h = (144, 104) if mobile else (240, 72)
+    bands = [(0, P['deep']), (h // 4, P['sky']), (h // 2, P['light'])]
+    defs, body = sky(w, h, bands)
+    css = [f'@keyframes drift{w}{{to{{transform:translateX(-{w}px)}}}}',
+           f'@keyframes fly{{from{{transform:translateX(-10px)}}to{{transform:translateX({w + 4}px)}}}}',
+           '.fly{animation:fly 30s infinite both}',
+           '@keyframes bob{50%{transform:translateY(-1px)}}.bob{animation:bob 1.2s steps(1) infinite}',
+           '@keyframes blink{50%{opacity:0}}',
+           '.flap{animation:blink .5s steps(1) infinite}.flap.alt{animation-delay:-.25s}',
+           '.ray{animation:blink 2s steps(1) infinite}.ray.alt{animation-delay:-1s}',
+           '.cur{animation:blink 1s steps(1) infinite}',
+           '@keyframes tw{0%,60%,100%{opacity:0}70%,90%{opacity:1}}.tw{opacity:0;animation:tw 4s steps(1) infinite}',
+           '@keyframes hop{0%,3%,100%{transform:translateY(0)}1.5%{transform:translateY(-2px)}}',
+           '.hop{animation:hop 7s steps(1) infinite}',
+           '@keyframes float{0%,100%{transform:translateY(0)}25%,75%{transform:translateY(-1px)}50%{transform:translateY(-2px)}}',
+           '.float{animation:float 6s steps(1) infinite}']
+
+    if mobile:
+        body += sun(124, 15, 7)
+        far = [(6, 12, 's'), (56, 8, 's'), (96, 30, 's')]
+        mid = [(24, 22, 'm'), (98, 50, 'm')]
+        near = [(-4, 62, 'l'), (74, 70, 'l')]
+    else:
+        body += sun(208, 17, 8)
+        far = [(16, 10, 's'), (80, 13, 's'), (140, 8, 's'), (178, 34, 's')]
+        mid = [(104, 27, 'm'), (162, 48, 'm'), (44, 38, 'm')]
+        near = [(126, 42, 'l'), (200, 54, 'l')]
+    for name, clouds, colors, secs in (('far', far, (P['pale'], P['light']), 360),
+                                       ('mid', mid, (P['white'], P['pale']), 200),
+                                       ('near', near, (P['white'], P['pale']), 110)):
+        part, rule = layer(name, w, clouds, colors, secs)
+        body += part
+        css.append(rule)
+
+    if mobile:
+        body += balloon(10, 4)
+        body += bird(0, 34, 2, 22, 75) + bird(0, 40, 9, 26, 75)
+        body += [twinkle(14, 4, 0.5), twinkle(70, 9, 2.1), twinkle(104, 3, 3.3)]
+        word_w = text_width('RIZE', scale=4)
+        body += title('RIZE', (w - word_w) // 2, 26, 4)
+        lines = ['RUST & GO · LINUX', 'MADE IN POLAND']
+        for i, line in enumerate(lines):
+            lw = text_width(line)
+            body.append(text(line, (w - lw) // 2, 64 + i * 10, P['ink']))
+        cur_x, cur_y = (w + text_width(lines[-1])) // 2 + 2, 74
+        sea_top = 86
+    else:
+        body += balloon(168, 24)
+        body += bird(0, 20, 1, 30, 125) + bird(0, 26, 12, 36, 125)
+        body += [twinkle(12, 5, 0.4), twinkle(70, 3, 1.9), twinkle(122, 10, 3.1), twinkle(186, 5, 2.6)]
+        body += title('RIZE', 14, 11, 4)
+        sub = 'RUST & GO · LINUX · POLAND'
+        body.append(text(sub, 16, 47, P['ink']))
+        cur_x, cur_y = 16 + text_width(sub) + 2, 47
+        sea_top = 56
+    body.append(f'<rect class="cur" x="{cur_x}" y="{cur_y}" width="5" height="7" fill="{P["ink"]}"/>')
+
+    back, rule1 = sea('seab', w, h, sea_top - 2, 9, 3, (P['pale'], P['pale'], P['white']), 260)
+    front, rule2 = sea('seaf', w, h, sea_top + 5, 8, 11, (P['white'], P['pale'], P['white']), 150)
+    css += [rule1, rule2]
+    body += back + front
+
+    clip = f'<clipPath id="c"><path d="{notched(w, h, 3)}"/></clipPath>'
+    content = [f'<defs>{clip}{"".join(defs)}</defs>', '<g clip-path="url(#c)">', *body, '</g>', frame(w, h)]
+    out = svg(w, h, SCALE, 'rize: rust and go, linux, poland',
+              'An 8-bit daytime sky in shades of blue: a blinking pixel sun, clouds drifting at three speeds, '
+              'two birds flying past and a bank of clouds along the bottom. The name RIZE stands in big pixel '
+              'letters that hop one after another, above the line "rust & go, linux, poland" and a blinking cursor.',
+              content, ''.join(css))
+    save('banner-mobile.svg' if mobile else 'banner.svg', out)
+
+
+def heading(word):
+    """A small pixel tag used as a section heading."""
+    label = word.upper()
+    tw = text_width(label)
+    w, h = tw + 18, 13
+    body = [f'<path fill="{P["deep"]}" d="{notched(w, h, 2)}"/>',
+            text('▸', 4, 3, P['sun']), text(label, 11, 3, P['white'])]
+    save(f'h-{word}.svg', svg(w, h, 4, word, f'Section heading: {word}.', body))
 
 
 if __name__ == '__main__':
-    (ROOT / 'assets/banner.svg').write_text(banner(1440, 600, False))
-    (ROOT / 'assets/banner-mobile.svg').write_text(banner(720, 560, True))
-    print('Drew the banner.')
+    banner(False)
+    banner(True)
+    for word in ('stats', 'activity', 'projects', 'loadout'):
+        heading(word)
+    print('Drew the banner and headings.')
