@@ -177,7 +177,7 @@ def frame(w, h, n=3):
 
 
 def banner(mobile):
-    w, h = (144, 104) if mobile else (240, 72)
+    w, h = (144, 96) if mobile else (240, 72)
     bands = [(0, P['deep']), (h // 4, P['sky']), (h // 2, P['light'])]
     defs, body = sky(w, h, bands)
     css = [f'@keyframes drift{w}{{to{{transform:translateX(-{w}px)}}}}',
@@ -187,7 +187,6 @@ def banner(mobile):
            '@keyframes blink{50%{opacity:0}}',
            '.flap{animation:blink .5s steps(1) infinite}.flap.alt{animation-delay:-.25s}',
            '.ray{animation:blink 2s steps(1) infinite}.ray.alt{animation-delay:-1s}',
-           '.cur{animation:blink 1s steps(1) infinite}',
            '@keyframes tw{0%,60%,100%{opacity:0}70%,90%{opacity:1}}.tw{opacity:0;animation:tw 4s steps(1) infinite}',
            '@keyframes hop{0%,3%,100%{transform:translateY(0)}1.5%{transform:translateY(-2px)}}',
            '.hop{animation:hop 7s steps(1) infinite}',
@@ -215,24 +214,14 @@ def banner(mobile):
         body += balloon(10, 4)
         body += bird(0, 34, 2, 22, 75) + bird(0, 40, 9, 26, 75)
         body += [twinkle(14, 4, 0.5), twinkle(70, 9, 2.1), twinkle(104, 3, 3.3)]
-        word_w = text_width('RIZE', scale=4)
-        body += title('RIZE', (w - word_w) // 2, 26, 4)
-        lines = ['RUST & GO · LINUX', 'MADE IN POLAND']
-        for i, line in enumerate(lines):
-            lw = text_width(line)
-            body.append(text(line, (w - lw) // 2, 64 + i * 10, P['ink']))
-        cur_x, cur_y = (w + text_width(lines[-1])) // 2 + 2, 74
-        sea_top = 86
+        body += title('rize', (w - text_width('rize', scale=5)) // 2, 28, 5)
+        sea_top = 78
     else:
         body += balloon(168, 24)
         body += bird(0, 20, 1, 30, 125) + bird(0, 26, 12, 36, 125)
         body += [twinkle(12, 5, 0.4), twinkle(70, 3, 1.9), twinkle(122, 10, 3.1), twinkle(186, 5, 2.6)]
-        body += title('RIZE', 14, 11, 4)
-        sub = 'RUST & GO · LINUX · POLAND'
-        body.append(text(sub, 16, 47, P['ink']))
-        cur_x, cur_y = 16 + text_width(sub) + 2, 47
+        body += title('rize', 14, 10, 5)
         sea_top = 56
-    body.append(f'<rect class="cur" x="{cur_x}" y="{cur_y}" width="5" height="7" fill="{P["ink"]}"/>')
 
     back, rule1 = sea('seab', w, h, sea_top - 2, 9, 3, (P['pale'], P['pale'], P['white']), 260)
     front, rule2 = sea('seaf', w, h, sea_top + 5, 8, 11, (P['white'], P['pale'], P['white']), 150)
@@ -241,10 +230,10 @@ def banner(mobile):
 
     clip = f'<clipPath id="c"><path d="{notched(w, h, 3)}"/></clipPath>'
     content = [f'<defs>{clip}{"".join(defs)}</defs>', '<g clip-path="url(#c)">', *body, '</g>', frame(w, h)]
-    out = svg(w, h, SCALE, 'rize: rust and go, linux, poland',
+    out = svg(w, h, SCALE, 'rize',
               'An 8-bit daytime sky in shades of blue: a blinking pixel sun, clouds drifting at three speeds, '
-              'two birds flying past and a bank of clouds along the bottom. The name RIZE stands in big pixel '
-              'letters that hop one after another, above the line "rust & go, linux, poland" and a blinking cursor.',
+              'two birds flying past and a bank of clouds along the bottom. The name rize stands in big '
+              'lowercase pixel letters that hop one after another.',
               content, ''.join(css))
     save('banner-mobile.svg' if mobile else 'banner.svg', out)
 

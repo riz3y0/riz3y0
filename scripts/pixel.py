@@ -40,6 +40,9 @@ BIG = {
  '@': '.###. #...# #.### #.#.# #.### #.... .####', '*': '..... #.#.# .###. ##### .###. #.#.# .....',
  '→': '..... ..#.. ...#. ##### ...#. ..#.. .....', '♥': '..... .#.#. ##### ##### .###. ..#.. .....',
  '▸': '#... ##.. ###. #### ###. ##.. #...', ' ': '... ... ... ... ... ... ...',
+ # lowercase, only the letters the banner uses
+ 'r': '..... ..... #.##. ##..# #.... #.... #....', 'i': '..#.. ..... .##.. ..#.. ..#.. ..#.. .###.',
+ 'z': '..... ..... ##### ...#. ..#.. .#... #####', 'e': '..... ..... .###. #...# ##### #.... .###.',
 }
 
 # 3x5 font for small captions.
@@ -63,7 +66,7 @@ FONTS = {'big': BIG, 'small': SMALL}
 
 def glyph(ch, font='big'):
     table = FONTS[font]
-    return (table.get(ch.upper()) or table['?' if '?' in table else ' ']).split()
+    return (table.get(ch) or table.get(ch.upper()) or table['?' if '?' in table else ' ']).split()
 
 
 def text_width(s, font='big', scale=1):
