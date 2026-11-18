@@ -28,11 +28,14 @@
 
 <img src="./assets/h-loadout.svg" height="34" alt="loadout">
 
-| | |
-| :--- | :--- |
-| **main** | Rust · Go |
-| **also** | C · C++ · Zig · Python · TypeScript |
-| **desktop** | CachyOS · niri · Vesper, my own Quickshell shell with a dynamic island |
-| **terminal** | foot · fish · yazi · neovim / zed |
+<picture>
+  <source media="(max-width: 600px)" srcset="./assets/loadout-mobile.svg">
+  <img src="./assets/loadout.svg" width="100%" alt="An 8-bit inventory. Main: Rust (a crab) and Go (a gopher). Also: cartridges for C, C++, Zig, Python and TypeScript. Rig: CachyOS, niri, Vesper (my own shell), foot, fish, yazi, neovim and zed.">
+</picture>
 
-<sub>every image here is drawn pixel by pixel by a small python script, no fonts, no frameworks. the panels refresh daily from public github data.</sub>
+<br>
+
+<picture>
+  <source media="(max-width: 600px)" srcset="./assets/footer-mobile.svg">
+  <img src="./assets/footer.svg" width="100%" alt="A little plane flies over the clouds towing a banner: thanks for visiting.">
+</picture>

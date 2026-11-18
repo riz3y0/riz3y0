@@ -92,8 +92,7 @@ def activity(user, mobile):
     days = [d for wk in weeks for d in wk['contributionDays']]
     highest = max([d['contributionCount'] for d in days] + [1])
     body = panel(w, h)
-    css = ['@keyframes in{from{opacity:0}}', '@keyframes now{50%{fill:' + P['sun'] + '}}',
-           f'.c{{animation:in .05s steps(1) both}}.now{{animation:now 1s steps(1) infinite}}']
+    css = ['@keyframes now{50%{fill:' + P['sun'] + '}}.now{animation:now 1s steps(1) infinite}']
     last_label = -99
     today = days[-1]['date'] if days else None
     for col, week in enumerate(weeks):
@@ -111,8 +110,7 @@ def activity(user, mobile):
             if date.day <= 7 and row == 0 and col * step - last_label >= 14 and col < len(weeks) - 2:
                 body.append(text(date.strftime('%b').upper(), x, top - 8, P['light'], font='small'))
                 last_label = col * step
-        body.append(f'<g class="c" style="animation-delay:{col * 0.03:.2f}s">' +
-                    ''.join(paint(px, SHADES[lv]) for lv, px in sorted(cells.items())) + '</g>')
+        body += [paint(px, SHADES[lv]) for lv, px in sorted(cells.items())]
     for row, label in ((1, 'M'), (3, 'W'), (5, 'F')):
         body.append(text(label, 5, top + row * step - (1 if mobile else 1), P['light'], font='small'))
     shown = sum(d['contributionCount'] for d in days)
