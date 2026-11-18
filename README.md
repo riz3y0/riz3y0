@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(max-width: 600px)" srcset="./assets/banner-mobile.svg">
-    <img src="./assets/banner.svg" width="100%" alt="rize in big lowercase pixel letters on an 8-bit blue sky, with drifting clouds, a striped hot-air balloon and a blinking sun.">
+    <source media="(max-width: 600px)" srcset="./assets/banner-mobile.svg?v=2">
+    <img src="./assets/banner.svg?v=2" width="100%" alt="rize in big lowercase pixel letters on an 8-bit blue sky, with drifting clouds, a striped hot-air balloon and a blinking sun.">
   </picture>
 </p>
 
